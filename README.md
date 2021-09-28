@@ -16,18 +16,13 @@ All implementation is in Python 3 but due to the neutrality of the messaging sys
 This repo has been validated with the below installation.
 
 ```bash
-# Python 3.7.3
+# Python 
 $ python3 --version
 Python 3.7.12
 
 # Docker
 $ docker --version
-Docker version 19.03.2, build 6a30dfc
-
-# Docker Compose
-$ docker-compose --version
-docker-compose version 1.24.1, build 4667896b
-
+Docker version 20.10.8, build 3967b7d
 
 $ pip --version
 pip 21.2.4
