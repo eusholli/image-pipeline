@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+  <h3  style="display: inline;"> Vision Pipeline&nbsp;</h3>
+  <button id="pause_button" >Pause</button>
+</div>
+<div class="row">
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="from_name">Source Image</span>
+      <br /><span id="from_frame_reference"></span> - <span id="from_time"></span>
+    </div>
+    <div>
+      <img id="from_image" src="" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="to_name">Detected Image</span>
+      <br /><span id="to_frame_reference"></span> - <span id="to_time"></span>
+    </div>
+    <div>
+      <img id="to_image" src="" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="re_name">Redacted Image</span>
+      <br /><span id="re_frame_reference"></span> - <span id="re_time"></span>
+    </div>
+    <div>
+      <img id="re_image" src="" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+</div>
+<h3> Vector Pipeline</h3>
+<div class="row">
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="from_name">Source Vector</span>
+      <br />Size - <span id="original_vector_size"></span> Bytes
+    </div>
+    <div id="original_vector" style="border: 2px; overflow-wrap: break-word;">
+    </div>
+  </div>
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="to_name">Detected Vector</span>
+      <br />Size - <span id="imageai_vector_size"></span> Bytes
+    </div>
+    <div id="imageai_vector" style="border: 2px; overflow-wrap: break-word; white-space: pre-wrap;">
+    </div>
+  </div>
+  <div class="col-xs-4">
+    <div><b>Name: </b><span id="re_name">Redacted Vector</span>
+      <br />Size - <span id="redacted_vector_size"></span> Bytes
+    </div>
+    <div id="redacted_vector" style="border: 2px; overflow-wrap: break-word; white-space: pre-wrap;">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+
+  let update = true;
+
+  let ws = new WebSocket('ws://' + document.domain + ':' + location.port + '/ws');
+
+  ws.onopen = function (e) {
+    console.log("[open] Connection established");
+    console.log("Sending to server");
+    ws.send("original");
+    ws.send("imageai");
+    ws.send("redacted");
+  };
+
+  ws.onmessage = function (event) {
+
+    if (event.data === "original") {
+      if (update) {
+        ws.send("original")
+      }
+    }
+    
+    else if (event.data === "imageai") {
+      if (update) {
+        ws.send("imageai")
+      }
+    }
+
+    else if (event.data === "redacted") {
+      if (update) {
+        ws.send("redacted")
+      }
+    }
+
+    else {
+  
+      let data = JSON.parse(event.data);
+
+      switch (data.type) {
+        case "original":
+          $("#from_time").text(data.from.time);
+          $("#from_frame_reference").text(data.from.frame_reference);
+          $("#from_image").attr("src", data.from.image);
+          $("#original_vector").text(data.from.image);
+          $("#original_vector_size").text(new Blob([data.from.image]).size);
+          if (update) {
+            ws.send("original")
+          }
+          break;
+        case "imageai":
+          $("#to_time").text(data.to.time);
+          $("#to_frame_reference").text(data.to.frame_reference);
+          $("#to_image").attr("src", data.to.image);
+          details = data.to.details;
+          details.forEach(function (obj) {
+            obj.position = obj.position.toString();
+          })
+          details = JSON.stringify(details, null, 2);
+          $("#imageai_vector").text(details);
+          $("#imageai_vector_size").text(new Blob([details]).size);
+
+          if (update) {
+            ws.send("imageai");
+          }
+          break;
+        case "redacted":
+          $("#re_time").text(data.re.time);
+          $("#re_frame_reference").text(data.re.frame_reference);
+          $("#re_image").attr("src", data.re.image);
+          details = data.re.details;
+          details.forEach(function (obj) {
+            obj.position = obj.position.toString();
+            delete obj.redacted
+          })
+          details = JSON.stringify(details, null, 2);
+          $("#redacted_vector").text(details);
+          $("#redacted_vector_size").text(new Blob([details]).size);
+
+          if (update) {
+            ws.send("redacted");
+          }
+          break;
+      }
+    };
+  };
+
+  $('#pause_button').on('click', function (event) {
+      console.log('Button clicked')
+      var text = $('#pause_button').html();
+      if (text === "Pause") {
+        $(this).html('Continue');
+        update = false
+      } else {
+        $(this).html('Pause');
+        update = true
+        ws.send('original')
+        ws.send("imageai");
+        ws.send("redacted");
+      }
+      event.preventDefault(); // To prevent following the link (optional)
+    });
+
+  ws.onclose = function (event) {
+    if (event.wasClean) {
+      console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+    } else {
+      // e.g. server process killed or network down
+      // event.code is usually 1006 in this case
+      console.log('[close] Connection died');
+    }
+  };
+
+  ws.onerror = function (error) {
+    console.log(`[error] ${error.message}`);
+  };
+
+</script>
+{% endblock %}

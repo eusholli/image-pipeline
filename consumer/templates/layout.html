@@ -1,0 +1,103 @@
+{% from "macros.html" import nav_link with context %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  {% block head %}
+  <title>AI Data Pipelines</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <style type="text/css">
+    .background {
+      background-color: #273c4c;
+      height: 100%;
+    }
+
+    html,
+    body {
+      background-color: #273c4c;
+      padding: 10px;
+    }
+
+    .content {
+      background-color: white;
+      padding-bottom: 30px;
+      border-radius: 3px;
+    }
+
+    .footer p {
+      color: white;
+      padding-top: 20px;
+      text-align: center;
+    }
+
+    h3 {
+      font-weight: bold;
+    }
+
+    .detected {
+      color: green;
+    }
+
+    .redacted {
+      color: red;
+    }
+
+    img {
+      width: 100%;
+    }
+
+  </style>
+  {% endblock %}
+</head>
+
+<body>
+  <div class="container-fluid background">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="row">
+          <nav class="navbar navbar-inverse" role="navigation">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse"
+                data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" style="color: white" href="/">AI Data Pipelines by MobiledgeX + Nats.io</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                {{ nav_link('home', 'Identification') }}
+                {{ nav_link('imageai', 'Imageai') }}
+                {{ nav_link('redaction', 'Imageai Redaction') }}
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </nav>
+        </div><!-- /.row -->
+        <div class="row">
+          <div class="col-xs-12 content">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+        <div class="row">
+          <div class="footer" style="color: white" >
+            {% block footer %}
+            Learn more at <a style="color: white" href="https://mobiledgex.com">MobiledgeX</a>
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block scripts %}
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    {% endblock %}
+
+</body>
+
+</html>

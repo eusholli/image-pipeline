@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+{% block content %}
+<h3> Imageai Redaction</h3>
+<p>Redaction Speed: <span id="speed"></span> - Recognition Average:<span id="average"></span></p>
+<button id="pause_button" class="btn btn-default btn-primary">Pause</button>
+<div class="row">
+  <div class="col-xs-6">
+    <div><b>Name: </b><span id="from_name"></span>
+      <br /><span id="from_frame_reference"></span> - <span id="from_time"></span>
+    </div>
+    <div>
+      <img id="from_image" src="" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+  <div class="col-xs-6">
+    <div><b>Name: </b><span id="to_name"></span>
+      <br /><span id="to_frame_reference"></span> - <span id="to_time"></span>
+    </div>
+    <div>
+      <img id="to_image" src="" class="img-responsive" alt="Responsive image">
+    </div>
+  </div>
+</div>
+<p>Details</p>
+<div>
+  <p><span id="detected"></span></p>
+</div>
+<div class="table-responsive">
+  <table class="table table-striped table-dark">
+    <thead>
+      <tr>
+        <th>Row</th>
+        <th>Type</th>
+        <th>Probability (%)</th>
+        <th>Location (Box)</th>
+      </tr>
+    </thead>
+    <tbody id="details">
+      <tr>
+        <td>1</td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+  var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+  var update = true;
+  const imageaiObjects = new Set(['person', 'bicycle', 'car', 'motorcycle', 'airplane',
+    'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop_sign',
+    'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',
+    'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard',
+    'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+    'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
+    'broccoli', 'carrot', 'hot dog', 'pizza', 'donot', 'cake', 'chair', 'couch', 'potted plant', 'bed',
+    'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
+    'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair dryer',
+    'toothbrush']);
+
+  socket.on('connect', function () {
+    console.log('connected')
+    if (update) {
+      socket.emit('get redacted')
+    }
+  })
+
+  socket.on('my response', function (msg) {
+    console.log(msg)
+  })
+  socket.on('redacted', function (data) {
+    console.log('redacted image received')
+    if (update && data) {
+      $("#from_name").text(data.from.name);
+      $("#from_time").text(data.from.time);
+      $("#from_frame_reference").text(data.from.frame_reference);
+      $("#from_image").attr("src", data.from.image);
+
+      $("#to_name").text(data.to.name);
+      $("#to_time").text(data.to.time);
+      $("#to_frame_reference").text(data.to.frame_reference);
+      $("#to_image").attr("src", data.to.image);
+      $("#speed").text(data.to.performance.speed);
+      $("#average").text(data.to.performance.average);
+
+      detailsID = $("#details");
+      detailsID.empty();
+      if (data.to.details) {
+        row = 1;
+        detectedObjects = new Set();
+        redactedObjects = new Set();
+        data.to.details.forEach(function (detail) {
+          console.log(detail);
+          if (detail.redacted) {
+            redactedObjects.add(detail.name);
+            redactedClass = ' class="redacted" ';
+          } else {
+            detectedObjects.add(detail.name);
+            redactedClass = '';
+          }
+          detailsID.append('<tr' + redactedClass + ' > <td>' + row++ + '</td>'
+            + '<td>' + detail.name + '</td>'
+            + '<td>' + detail.percentage_probability + '</td>'
+            + '<td>(' + detail.position[0]
+            + ',' + detail.position[1] + '),('
+            + detail.position[2] + ','
+            + detail.position[3] + ')' + '</td></tr>');
+        });
+        detectedID = $("#detected");
+        detectedID.empty();
+
+        redactedObjects.forEach(function (name) {
+          detectedID.append(' <span class="redacted">' + name + '</span>');
+        })
+        detectedObjects.forEach(function (name) {
+          detectedID.append(' <span class="detected">' + name + '</span>');
+        })
+        imageaiObjects.forEach(function (name) {
+          if (!detectedObjects.has(name) || !redactedObjects.has(name)) {
+            detectedID.append(' <span>' + name + '</span>');
+          }
+        })
+      }
+    }
+
+    if (update) {
+      socket.emit('get redacted')
+    }
+  })
+
+  $('#pause_button').on('click', function (event) {
+    console.log('Button clicked')
+    var text = $('#pause_button').html();
+    if (text === "Pause") {
+      $(this).html('Continue');
+      update = false
+    } else {
+      $(this).html('Pause');
+      update = true
+      socket.emit('get redacted')
+    }
+    event.preventDefault(); // To prevent following the link (optional)
+  });
+
+</script>
+{% endblock %}
