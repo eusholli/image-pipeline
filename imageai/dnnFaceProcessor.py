@@ -84,7 +84,7 @@ async def analyzeImages(nc, frameDetails, parent):
                     }
                 )
 
-                cv2.rectangle(image, (x, y), (x1, y1), (0, 255, 0), 2)
+                cv2.rectangle(image, (x, y), (x1, y1), (0, 255, 0), 4)
                 annotate = str(round(confidence*100, 2))
                 cv2.putText(image, annotate, (box[0]+10, box[1]+20),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 255, 0), 2)
