@@ -1,6 +1,7 @@
 # AI Data Pipelines - Visual Example
 
 Distributed AI data pipeline design for edge analysis of video streams
+![Screen Grab of Face Recognition](face.png "Screen Grab of Face Recognition")
 
 ## Introduction
 
@@ -69,7 +70,7 @@ There are 5 main processes
 | :---: | :---------- |
 | nats | Secure messaging service |
 | publisher.py | Generate video stream, either from a media file or from the webcam |
-| imageaiProcessor.py | COCO Mobilenet SSD to identify objects |
+| imageaiProcessor.py | COCO Mobilenet-SSD to identify objects |
 | redaction.py | Redaction service to remove objects |
 | q-app.py | Web server to allow real time display of the data pipeline|
   

@@ -88,7 +88,6 @@ async def publish_camera(producer, frameDetails):
         camera.release()
         traceback.print_exc()
         print("\nExiting.")
-        sys.exit(1)
 
 
 async def initiate(loop):

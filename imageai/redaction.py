@@ -56,8 +56,8 @@ async def redactImages(nc, frameDetails, redactedObjects, parent):
                     eachObject["position"][2],
                     eachObject["position"][3],
                 )
-                cv2.rectangle(image, eachObject["position"], color=(
-                    0, 0, 0), thickness=-1)
+                cv2.rectangle(image, start_point, end_point, (0, 0, 0), -1)
+                # cv2.rectangle(image, eachObject["position"], color=(0, 0, 0), thickness=-1)
                 # image = cv2.rectangle(image, start_point, end_point, color, thickness)
 
         print("--------------------------------\n\r")
@@ -83,7 +83,6 @@ async def redactImages(nc, frameDetails, redactedObjects, parent):
     except Exception as e:
         traceback.print_exc()
         print("\nExiting.")
-        sys.exit(1)
 
 
 async def initiate(loop):

@@ -65,6 +65,12 @@ async def analyzeImages(nc, frameDetails, parent):
         if len(labels) != 0:
             for label_index, confidence, box in zip(labels.flatten(), confs.flatten(), bbox):
                 label = classNames[int(label_index)-1]
+                position = [
+                    box[0].item(),
+                    box[1].item(),
+                    box[0].item() + box[2].item(),
+                    box[1].item() + box[3].item(),
+                ]
                 print(
                     label,
                     " : ",
@@ -75,20 +81,17 @@ async def analyzeImages(nc, frameDetails, parent):
                 identified_objects.append(
                     {
                         "name": label,
-                        "percentage_probability": round(confidence.item(), 2),
-                        "position": [
-                            int(box[0]),
-                            int(box[1]),
-                            int(box[2]),
-                            int(box[3]),
-                        ],
+                        "percentage_probability": round(confidence.item()*100, 2),
+                        "position": position
                     }
                 )
 
-                cv2.rectangle(image, box, color=(0, 255, 0), thickness=2)
+                cv2.rectangle(image, (position[0], position[1]),
+                              (position[2], position[3]), (0, 255, 0), 4)
+                # cv2.rectangle(image, box, color=(0, 255, 255), thickness=2)
                 annotate = label + ' - ' + str(round(confidence*100, 2))
                 cv2.putText(image, annotate, (box[0]+10, box[1]+30),
-                            cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+                            cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 255, 0), 2)
             print("--------------------------------\n\r")
 
         # Convert image to png
@@ -109,7 +112,6 @@ async def analyzeImages(nc, frameDetails, parent):
     except Exception as e:
         traceback.print_exc()
         print("\nExiting.")
-        sys.exit(1)
 
 
 async def initiate(loop):
