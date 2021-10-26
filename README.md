@@ -6,7 +6,7 @@ Distributed AI data pipeline design for edge analysis of video streams
 ## Introduction
 
 Online is starting to shadow offline and combine the physical world with potential digital overlays and real time interpretations. This forces the need for different software design patterns that support asynchronous interactions, across heterogeneous end points, that require real time insights with possible associated actions. These needs are seen equally applied to autonomous vehicles as well as XR experiences, for example.  The design pattern that supports these interactions at scale is the "AI data pipeline", which rather than being a client/server interaction, is more of a continous processing, response, distribution, mesh design.  The [Seamster](https://seamster.io) initiative, started by MobiledgeX, first saw this foundational pattern when modeling all edge use cases, across all industries.
-![Seamster edge use case DNA](dna.png "Seamster edge use case DNA")
+![Architecture overview](architecture.png "Architecture overview")
 
 This repo implements a simple example of an AI data pipeline applied to real time visual processing. It leverages [Nats](https://nats.io) as the distributed messaging underlay. The design clearly shows both the bandwidth saving potential, as well as the security/privacy mechanisms for information redaction. 
 
@@ -70,7 +70,9 @@ There are 5 main processes
 | :---: | :---------- |
 | nats | Secure messaging service |
 | publisher.py | Generate video stream, either from a media file or from the webcam |
-| imageaiProcessor.py | COCO Mobilenet-SSD to identify objects |
+| imageaiProcessor.py | COCO Mobilenet-SSD to identify objects (deprecated due to no longer supported) |
+| haarFaceProcessor.py | Haar facial detection using Mobilenet-SSD model |
+| dnnFaceProcessor.py | Dnn facial detection using Caffe model |
 | redaction.py | Redaction service to remove objects |
 | q-app.py | Web server to allow real time display of the data pipeline|
   
@@ -167,6 +169,10 @@ optional arguments:
   -n NAME, --name NAME  set the display name of this object detection process,
                         defaults to "imageaiProcessor" if missing
 ```
+
+Alternatively to start dnnFaceProcessor with the defaults type  `python imageai/dnnFaceProcessor.py` and to start haarFaceProcessor with the defaults type  `python imageai/haarFaceProcessor.py`.
+
+If running with the default topic names (system already wired to ingest/display correctly) then it is best to only run one detection algorithm at one time.
 
 ### Redaction Shell
 
